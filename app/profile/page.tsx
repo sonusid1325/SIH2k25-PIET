@@ -25,7 +25,6 @@ import {
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
-import Navbar from "@/components/navbar";
 
 interface UserProfile {
   displayName: string;
@@ -78,7 +77,6 @@ export default function ProfilePage() {
   if (loading || profileLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <Navbar />
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <div className="h-12 w-12 rounded-lg bg-orange flex items-center justify-center text-white shadow-lg mx-auto mb-4 animate-pulse">
@@ -135,8 +133,6 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
-
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
@@ -163,7 +159,10 @@ export default function ProfilePage() {
               <Card className="border-border/50">
                 <CardHeader className="text-center">
                   <div className="mx-auto mb-4">
-                    {profileData.photoURL ? (
+                    {profileData.photoURL &&
+                    user?.providerData?.some(
+                      (provider) => provider.providerId === "google.com",
+                    ) ? (
                       <Image
                         src={profileData.photoURL}
                         alt="Profile"
@@ -173,7 +172,8 @@ export default function ProfilePage() {
                       />
                     ) : (
                       <div className="h-20 w-20 rounded-full bg-orange flex items-center justify-center text-white text-2xl font-bold">
-                        {profileData.displayName?.charAt(0) || "U"}
+                        {profileData.displayName?.charAt(0)?.toUpperCase() ||
+                          "U"}
                       </div>
                     )}
                   </div>

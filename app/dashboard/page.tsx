@@ -19,7 +19,6 @@ import {
   Brain,
 } from "lucide-react";
 import { useAuth } from "@/lib/contexts/AuthContext";
-import Navbar from "@/components/navbar";
 
 export default function DashboardPage() {
   const { user, profileCompleted, loading } = useAuth();
@@ -85,8 +84,6 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
-
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
