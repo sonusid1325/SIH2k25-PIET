@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Menu, X, GraduationCap, BookOpen, Users, Award } from "lucide-react"
+import { useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Menu, X, GraduationCap, BookOpen, Users, Award } from "lucide-react";
 
 export default function Navbar() {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false);
 
-  const toggleMenu = () => setIsOpen(!isOpen)
+  const toggleMenu = () => setIsOpen(!isOpen);
 
   const navItems = [
     { name: "Home", href: "/" },
@@ -16,15 +16,18 @@ export default function Navbar() {
     { name: "Courses", href: "/courses", icon: BookOpen },
     { name: "Resources", href: "/resources", icon: Award },
     { name: "About", href: "/about", icon: Users },
-  ]
+  ];
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2 animate-scale-in">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-orange text-white shadow-lg animate-pulse-orange">
+          <Link
+            href="/"
+            className="flex items-center space-x-2 animate-scale-in"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-yellow text-white shadow-lg animate-pulse-yellow">
               <GraduationCap className="h-6 w-6" />
             </div>
             <div className="hidden sm:block">
@@ -60,7 +63,7 @@ export default function Navbar() {
             </Button>
             <Button
               size="sm"
-              className="bg-gradient-orange hover:opacity-90 text-white shadow-lg animate-fade-in-up animate-delay-500"
+              className="bg-gradient-yellow hover:opacity-90 text-white shadow-lg animate-fade-in-up animate-delay-500"
             >
               Get Started
             </Button>
@@ -78,11 +81,13 @@ export default function Navbar() {
         </div>
 
         {/* Mobile Navigation */}
-        <div className={`md:hidden transition-all duration-300 ease-in-out ${
-          isOpen
-            ? "max-h-96 opacity-100 pb-4"
-            : "max-h-0 opacity-0 overflow-hidden"
-        }`}>
+        <div
+          className={`md:hidden transition-all duration-300 ease-in-out ${
+            isOpen
+              ? "max-h-96 opacity-100 pb-4"
+              : "max-h-0 opacity-0 overflow-hidden"
+          }`}
+        >
           <div className="flex flex-col space-y-2 pt-4 border-t">
             {navItems.map((item, index) => (
               <Link key={item.name} href={item.href}>
@@ -104,9 +109,7 @@ export default function Navbar() {
               >
                 Sign In
               </Button>
-              <Button
-                className="w-full bg-gradient-orange hover:opacity-90 text-white animate-slide-in-left animate-delay-500"
-              >
+              <Button className="w-full bg-gradient-yellow hover:opacity-90 text-white animate-slide-in-left animate-delay-500">
                 Get Started
               </Button>
             </div>
@@ -114,5 +117,5 @@ export default function Navbar() {
         </div>
       </div>
     </nav>
-  )
+  );
 }
