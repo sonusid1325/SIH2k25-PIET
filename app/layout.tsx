@@ -13,14 +13,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CareerPath - AI-Powered Career & Education Advisor",
+  title: "nullsafecode - AI-Powered Career & Education Advisor",
   description:
     "Navigate your educational journey with confidence. Get personalized guidance for subject selection, college choices, and career paths tailored specifically for Indian students.",
   keywords:
     "career guidance, education advisor, AI career counseling, college selection, subject combination, government colleges, scholarships, career outcomes",
-  authors: [{ name: "CareerPath Team" }],
+  authors: [{ name: "nullsafecode Team" }],
   openGraph: {
-    title: "CareerPath - AI-Powered Career & Education Advisor",
+    title: "nullsafecode - AI-Powered Career & Education Advisor",
     description:
       "Navigate your educational journey with confidence. Get personalized guidance for subject selection, college choices, and career paths tailored specifically for Indian students.",
     type: "website",

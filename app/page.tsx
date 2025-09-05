@@ -21,8 +21,6 @@ import {
   Target,
   Brain,
   ArrowRight,
-  Star,
-  MapPin,
   Zap,
   Shield,
   Heart,
@@ -82,27 +80,6 @@ export default function HomePage() {
     { number: "24/7", label: "AI Support" },
   ];
 
-  const testimonials = [
-    {
-      name: "Priya Sharma",
-      location: "Delhi",
-      text: "CareerPath helped me choose the right engineering stream. Now I'm in my dream college!",
-      rating: 5,
-    },
-    {
-      name: "Rahul Kumar",
-      location: "Bihar",
-      text: "The scholarship information was a game-changer. I got full funding for my studies.",
-      rating: 5,
-    },
-    {
-      name: "Anjali Patel",
-      location: "Gujarat",
-      text: "The career outcome predictions were spot-on. I'm exactly where they said I'd be!",
-      rating: 5,
-    },
-  ];
-
   const impacts = [
     {
       icon: TrendingUp,
@@ -136,7 +113,7 @@ export default function HomePage() {
 
       {/* Hero Section */}
       <section className="relative overflow-hidden py-20 md:py-32">
-        <div className="absolute inset-0 bg-gradient-yellow-light opacity-10"></div>
+        <div className="absolute inset-0 bg-orange-light opacity-10"></div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center max-w-4xl mx-auto">
             <Badge
@@ -150,7 +127,7 @@ export default function HomePage() {
             <h1
               className={`text-4xl md:text-6xl lg:text-7xl font-bold text-foreground mb-6 animate-fade-in-up ${isVisible ? "" : "opacity-0"} animate-delay-100`}
             >
-              Your <span className="gradient-text font-bold">AI Career</span>{" "}
+              Your <span className="text-primary font-bold">AI Career</span>{" "}
               Advisor
             </h1>
 
@@ -165,13 +142,15 @@ export default function HomePage() {
             <div
               className={`flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in-up ${isVisible ? "" : "opacity-0"} animate-delay-300`}
             >
-              <Button
-                size="lg"
-                className="bg-gradient-yellow hover:opacity-90 text-white shadow-lg px-8"
-              >
-                Start Your Journey
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+              <Link href="/signup">
+                <Button
+                  size="lg"
+                  className="bg-orange hover:bg-orange/90 text-white shadow-lg px-8"
+                >
+                  Start Your Journey
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
               <Button variant="outline" size="lg" className="px-8">
                 Watch Demo
               </Button>
@@ -267,7 +246,7 @@ export default function HomePage() {
                 className={`text-center hover:shadow-lg transition-all duration-300 animate-scale-in animate-delay-${index * 100}`}
               >
                 <CardHeader>
-                  <div className="h-16 w-16 rounded-full bg-gradient-yellow flex items-center justify-center mx-auto mb-4 text-white">
+                  <div className="h-16 w-16 rounded-full bg-orange flex items-center justify-center mx-auto mb-4 text-white">
                     <impact.icon className="h-8 w-8" />
                   </div>
                   <CardTitle className="text-lg">{impact.title}</CardTitle>
@@ -322,7 +301,7 @@ export default function HomePage() {
                   key={step.step}
                   className={`text-center animate-fade-in-up animate-delay-${index * 200}`}
                 >
-                  <div className="h-16 w-16 rounded-full bg-gradient-yellow text-white flex items-center justify-center mx-auto mb-6 text-xl font-bold">
+                  <div className="h-16 w-16 rounded-full bg-orange text-white flex items-center justify-center mx-auto mb-6 text-xl font-bold">
                     {step.step}
                   </div>
                   <h3 className="text-xl font-semibold mb-4">{step.title}</h3>
@@ -334,63 +313,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="py-20 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <Badge
-              variant="outline"
-              className="mb-4 text-primary border-primary/50"
-            >
-              Success Stories
-            </Badge>
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              What Our Students Say
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            {testimonials.map((testimonial, index) => (
-              <Card
-                key={testimonial.name}
-                className={`animate-scale-in animate-delay-${index * 100}`}
-              >
-                <CardHeader>
-                  <div className="flex items-center gap-1 mb-2">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className="h-4 w-4 fill-yellow-400 text-yellow-400"
-                      />
-                    ))}
-                  </div>
-                  <CardDescription className="text-base italic">
-                    &ldquo;{testimonial.text}&rdquo;
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-full bg-gradient-yellow flex items-center justify-center text-white text-sm font-semibold">
-                      {testimonial.name.charAt(0)}
-                    </div>
-                    <div>
-                      <p className="font-medium">{testimonial.name}</p>
-                      <p className="text-sm text-muted-foreground flex items-center">
-                        <MapPin className="h-3 w-3 mr-1" />
-                        {testimonial.location}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* CTA Section */}
       <section className="py-20 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-yellow opacity-10"></div>
+        <div className="absolute inset-0 bg-orange-light opacity-10"></div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center max-w-3xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
@@ -401,13 +326,15 @@ export default function HomePage() {
               path with our AI-powered guidance.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                size="lg"
-                className="bg-gradient-yellow hover:opacity-90 text-white shadow-lg px-8"
-              >
-                Get Started Free
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+              <Link href="/signup">
+                <Button
+                  size="lg"
+                  className="bg-orange hover:bg-orange/90 text-white shadow-lg px-8"
+                >
+                  Get Started Free
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
               <Button variant="outline" size="lg" className="px-8">
                 Schedule Demo
               </Button>
@@ -422,11 +349,11 @@ export default function HomePage() {
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center space-x-2 mb-4">
-                <div className="h-8 w-8 rounded-lg bg-gradient-yellow flex items-center justify-center text-white">
+                <div className="h-8 w-8 rounded-lg bg-orange flex items-center justify-center text-white">
                   <GraduationCap className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold">CareerPath</h3>
+                  <h3 className="font-bold">nullsafecode</h3>
                   <p className="text-xs text-muted-foreground">
                     AI Career Advisor
                   </p>
@@ -484,7 +411,7 @@ export default function HomePage() {
 
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-sm text-muted-foreground mb-4 md:mb-0">
-              © 2024 CareerPath. All rights reserved.
+              © 2024 nullsafecode. All rights reserved.
             </p>
             <div className="flex space-x-4">
               <Button

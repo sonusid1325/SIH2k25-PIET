@@ -27,11 +27,13 @@ export default function Navbar() {
             href="/"
             className="flex items-center space-x-2 animate-scale-in"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-yellow text-white shadow-lg animate-pulse-yellow">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange text-white shadow-lg animate-pulse-orange">
               <GraduationCap className="h-6 w-6" />
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-xl font-bold text-foreground">CareerPath</h1>
+              <h1 className="text-xl font-bold text-foreground">
+                nullsafecode
+              </h1>
               <p className="text-xs text-muted-foreground">AI Career Advisor</p>
             </div>
           </Link>
@@ -54,19 +56,23 @@ export default function Navbar() {
 
           {/* CTA Button - Desktop */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button
-              variant="outline"
-              size="sm"
-              className="animate-fade-in-up animate-delay-500"
-            >
-              Sign In
-            </Button>
-            <Button
-              size="sm"
-              className="bg-gradient-yellow hover:opacity-90 text-white shadow-lg animate-fade-in-up animate-delay-500"
-            >
-              Get Started
-            </Button>
+            <Link href="/login">
+              <Button
+                variant="outline"
+                size="sm"
+                className="animate-fade-in-up animate-delay-500"
+              >
+                Sign In
+              </Button>
+            </Link>
+            <Link href="/signup">
+              <Button
+                size="sm"
+                className="bg-orange hover:bg-orange/90 text-white shadow-lg animate-fade-in-up animate-delay-500"
+              >
+                Get Started
+              </Button>
+            </Link>
           </div>
 
           {/* Mobile menu button */}
@@ -103,15 +109,23 @@ export default function Navbar() {
               </Link>
             ))}
             <div className="flex flex-col space-y-2 pt-4">
-              <Button
-                variant="outline"
-                className="w-full animate-slide-in-left animate-delay-300"
-              >
-                Sign In
-              </Button>
-              <Button className="w-full bg-gradient-yellow hover:opacity-90 text-white animate-slide-in-left animate-delay-500">
-                Get Started
-              </Button>
+              <Link href="/login">
+                <Button
+                  variant="outline"
+                  className="w-full animate-slide-in-left animate-delay-300"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Sign In
+                </Button>
+              </Link>
+              <Link href="/signup">
+                <Button
+                  className="w-full bg-orange hover:bg-orange/90 text-white animate-slide-in-left animate-delay-500"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Get Started
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
