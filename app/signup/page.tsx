@@ -111,7 +111,7 @@ export default function SignupPage() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-foreground">
-                nullsafecode
+                SkillBridge
               </h1>
               <p className="text-sm text-muted-foreground">AI Career Advisor</p>
             </div>

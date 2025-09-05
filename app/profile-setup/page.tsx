@@ -234,7 +234,7 @@ export default function ProfileSetupPage() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-foreground">
-                nullsafecode
+                Skill-Bridge
               </h1>
               <p className="text-sm text-muted-foreground">AI Career Advisor</p>
             </div>
