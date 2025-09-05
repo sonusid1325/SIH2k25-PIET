@@ -1,14 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { GraduationCap, Mail, Lock, Eye, EyeOff, User } from "lucide-react";
+import { signUpWithEmail, signInWithGoogle } from "@/lib/firebase/auth";
+import { useAuth } from "@/lib/contexts/AuthContext";
 
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -16,22 +27,78 @@ export default function SignupPage() {
     confirmPassword: "",
   });
 
+  const router = useRouter();
+  const { user } = useAuth();
+
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
-  const toggleConfirmPasswordVisibility = () => setShowConfirmPassword(!showConfirmPassword);
+  const toggleConfirmPasswordVisibility = () =>
+    setShowConfirmPassword(!showConfirmPassword);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle signup logic here
-    console.log("Signup:", formData);
+    setLoading(true);
+    setError("");
+
+    // Validate passwords match
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords don't match");
+      setLoading(false);
+      return;
+    }
+
+    // Validate password strength
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      setLoading(false);
+      return;
+    }
+
+    const { user, error } = await signUpWithEmail(
+      formData.email,
+      formData.password,
+      formData.name,
+    );
+
+    if (error) {
+      setError(error);
+      setLoading(false);
+    } else if (user) {
+      router.push("/profile-setup");
+    }
   };
+
+  const handleGoogleSignup = async () => {
+    setLoading(true);
+    setError("");
+
+    const { user, error } = await signInWithGoogle();
+
+    if (error) {
+      setError(error);
+      setLoading(false);
+    } else if (user) {
+      router.push("/profile-setup");
+    }
+  };
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (user) {
+      router.push("/profile-setup");
+    }
+  }, [user, router]);
+
+  if (user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4 py-8">
@@ -43,7 +110,9 @@ export default function SignupPage() {
               <GraduationCap className="h-7 w-7" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">nullsafecode</h1>
+              <h1 className="text-2xl font-bold text-foreground">
+                nullsafecode
+              </h1>
               <p className="text-sm text-muted-foreground">AI Career Advisor</p>
             </div>
           </Link>
@@ -52,16 +121,27 @@ export default function SignupPage() {
         {/* Signup Form */}
         <Card className="border-border/50 shadow-lg">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center">Create account</CardTitle>
+            <CardTitle className="text-2xl text-center">
+              Create account
+            </CardTitle>
             <CardDescription className="text-center">
               Enter your information to get started
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {error && (
+              <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
+                {error}
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Name Field */}
               <div className="space-y-2">
-                <label htmlFor="name" className="text-sm font-medium text-foreground">
+                <label
+                  htmlFor="name"
+                  className="text-sm font-medium text-foreground"
+                >
                   Full Name
                 </label>
                 <div className="relative">
@@ -81,7 +161,10 @@ export default function SignupPage() {
 
               {/* Email Field */}
               <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium text-foreground">
+                <label
+                  htmlFor="email"
+                  className="text-sm font-medium text-foreground"
+                >
                   Email
                 </label>
                 <div className="relative">
@@ -101,7 +184,10 @@ export default function SignupPage() {
 
               {/* Password Field */}
               <div className="space-y-2">
-                <label htmlFor="password" className="text-sm font-medium text-foreground">
+                <label
+                  htmlFor="password"
+                  className="text-sm font-medium text-foreground"
+                >
                   Password
                 </label>
                 <div className="relative">
@@ -132,7 +218,10 @@ export default function SignupPage() {
 
               {/* Confirm Password Field */}
               <div className="space-y-2">
-                <label htmlFor="confirmPassword" className="text-sm font-medium text-foreground">
+                <label
+                  htmlFor="confirmPassword"
+                  className="text-sm font-medium text-foreground"
+                >
                   Confirm Password
                 </label>
                 <div className="relative">
@@ -169,13 +258,19 @@ export default function SignupPage() {
                   className="mt-1 rounded border-gray-300 text-primary focus:ring-primary"
                   required
                 />
-                <label htmlFor="terms" className="text-sm text-muted-foreground">
+                <label
+                  htmlFor="terms"
+                  className="text-sm text-muted-foreground"
+                >
                   I agree to the{" "}
                   <Link href="/terms" className="text-primary hover:underline">
                     Terms of Service
                   </Link>{" "}
                   and{" "}
-                  <Link href="/privacy" className="text-primary hover:underline">
+                  <Link
+                    href="/privacy"
+                    className="text-primary hover:underline"
+                  >
                     Privacy Policy
                   </Link>
                 </label>
@@ -186,8 +281,9 @@ export default function SignupPage() {
                 type="submit"
                 className="w-full bg-orange hover:bg-orange/90 text-white"
                 size="lg"
+                disabled={loading}
               >
-                Create Account
+                {loading ? "Creating Account..." : "Create Account"}
               </Button>
             </form>
 
@@ -197,13 +293,21 @@ export default function SignupPage() {
                 <div className="w-full border-t border-border"></div>
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">Or sign up with</span>
+                <span className="bg-background px-2 text-muted-foreground">
+                  Or sign up with
+                </span>
               </div>
             </div>
 
             {/* Social Signup */}
-            <div className="grid grid-cols-2 gap-3">
-              <Button variant="outline" className="w-full">
+            <div className="w-full">
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={handleGoogleSignup}
+                disabled={loading}
+                type="button"
+              >
                 <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                   <path
                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -222,13 +326,7 @@ export default function SignupPage() {
                     fill="#EA4335"
                   />
                 </svg>
-                Google
-              </Button>
-              <Button variant="outline" className="w-full">
-                <svg className="mr-2 h-4 w-4 fill-current" viewBox="0 0 24 24">
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                </svg>
-                Facebook
+                {loading ? "Signing up..." : "Continue with Google"}
               </Button>
             </div>
 
