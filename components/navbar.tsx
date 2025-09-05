@@ -13,6 +13,7 @@ import {
   User,
   LogOut,
   Brain,
+  MapPin,
 } from "lucide-react";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { signOutUser } from "@/lib/firebase/auth";
@@ -43,6 +44,7 @@ export default function Navbar() {
   const authenticatedNavItems = [
     { name: "Dashboard", href: "/dashboard", icon: GraduationCap },
     { name: "Assessment", href: "/career-assessment", icon: Brain },
+    { name: "Career Path", href: "/career-path", icon: MapPin },
     { name: "Courses", href: "/courses", icon: BookOpen },
     { name: "Resources", href: "/resources", icon: Award },
   ];
