@@ -32,6 +32,12 @@ export interface AssessmentResult {
   personalityType: string;
   interests: string[];
   completedAt: string;
+  strengths?: string[];
+  weaknesses?: string[];
+  actionPlan?: Array<{
+    timeline: string;
+    actions: string[];
+  }>;
 }
 
 export interface UserProfile {

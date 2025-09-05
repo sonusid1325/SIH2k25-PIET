@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/contexts/AuthContext";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 import NavbarWrapper from "@/components/navbar-wrapper";
 
 const geistSans = Geist({
@@ -15,16 +16,16 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "nullsafecode - AI-Powered Career & Education Advisor",
+  title: "Skill Bridge - AI-Powered Career & Education Platform",
   description:
-    "Navigate your educational journey with confidence. Get personalized guidance for subject selection, college choices, and career paths tailored specifically for Indian students.",
+    "Bridge the gap between education and career success. Get personalized guidance for subject selection, college choices, and career paths tailored specifically for Indian students.",
   keywords:
-    "career guidance, education advisor, AI career counseling, college selection, subject combination, government colleges, scholarships, career outcomes",
-  authors: [{ name: "nullsafecode Team" }],
+    "career guidance, education advisor, AI career counseling, college selection, subject combination, government colleges, scholarships, career outcomes, skill development, career bridge",
+  authors: [{ name: "Skill Bridge Team" }],
   openGraph: {
-    title: "nullsafecode - AI-Powered Career & Education Advisor",
+    title: "Skill Bridge - AI-Powered Career & Education Platform",
     description:
-      "Navigate your educational journey with confidence. Get personalized guidance for subject selection, college choices, and career paths tailored specifically for Indian students.",
+      "Bridge the gap between education and career success. Get personalized guidance for subject selection, college choices, and career paths tailored specifically for Indian students.",
     type: "website",
   },
 };
@@ -35,14 +36,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthProvider>
-          <NavbarWrapper />
-          {children}
-        </AuthProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <AuthProvider>
+            <NavbarWrapper />
+            <main className="min-h-screen">{children}</main>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

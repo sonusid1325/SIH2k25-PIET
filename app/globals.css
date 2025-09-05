@@ -226,3 +226,143 @@
 .border-orange {
     border-color: oklch(0.65 0.2 45) !important;
 }
+
+/* CSS custom properties for consistent navbar height */
+:root {
+    --navbar-height: 56px;
+}
+
+/* Mobile-specific improvements */
+@media (max-width: 639px) {
+    /* Prevent horizontal scroll on mobile */
+    body {
+        overflow-x: hidden;
+    }
+
+    /* Ensure touch targets are at least 44px */
+    button,
+    a {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    /* Improve mobile menu spacing */
+    .mobile-menu-item {
+        padding: 12px 16px;
+        min-height: 48px;
+    }
+}
+
+/* Extra small devices breakpoint */
+@media (min-width: 475px) {
+    .xs\:block {
+        display: block;
+    }
+
+    .xs\:hidden {
+        display: none;
+    }
+
+    .xs\:flex {
+        display: flex;
+    }
+}
+
+/* Mobile navbar improvements */
+.mobile-nav-overlay {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.mobile-nav-menu {
+    box-shadow:
+        0 10px 25px -5px rgb(0 0 0 / 0.1),
+        0 4px 6px -2px rgb(0 0 0 / 0.05);
+    background-color: var(--background);
+    border-top: 1px solid var(--border);
+}
+
+/* Clean navbar styling */
+.navbar-clean {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+/* Mobile navigation backdrop */
+.mobile-nav-backdrop {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    background-color: rgba(0, 0, 0, 0.2);
+    animation: backdrop-fade-in 0.2s ease-out;
+}
+
+.dark .mobile-nav-backdrop {
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+@keyframes backdrop-fade-in {
+    from {
+        opacity: 0;
+        backdrop-filter: blur(0px);
+        -webkit-backdrop-filter: blur(0px);
+    }
+    to {
+        opacity: 1;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+    }
+}
+
+/* Mobile navbar optimizations */
+@media (max-width: 768px) {
+    nav {
+        height: var(--navbar-height);
+        background-color: var(--background) !important;
+    }
+
+    .mobile-nav {
+        background-color: var(--background);
+        border-top: 1px solid var(--border);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        animation: mobile-nav-slide-down 0.2s ease-out;
+    }
+
+    .dark .mobile-nav {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+}
+
+@keyframes mobile-nav-slide-down {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Clean dropdown animations */
+.dropdown-enter {
+    animation: dropdown-in 0.2s ease-out;
+}
+
+@keyframes dropdown-in {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Better touch feedback for mobile */
+@media (hover: none) and (pointer: coarse) {
+    button:active {
+        transform: scale(0.98);
+        transition: transform 0.1s ease;
+    }
+}
