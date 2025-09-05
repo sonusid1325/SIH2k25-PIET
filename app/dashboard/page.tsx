@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -17,19 +17,47 @@ import {
   TrendingUp,
   Award,
   Brain,
+  RefreshCw,
 } from "lucide-react";
 import { useAuth } from "@/lib/contexts/AuthContext";
+import { AssessmentService } from "@/lib/services/assessmentService";
 
 export default function DashboardPage() {
   const { user, profileCompleted, loading } = useAuth();
   const router = useRouter();
+  const [assessmentStatus, setAssessmentStatus] = useState({
+    completed: false,
+    needsRetake: false,
+    loading: true,
+  });
 
   useEffect(() => {
+    const loadAssessmentStatus = async () => {
+      if (!user) return;
+
+      try {
+        const status = await AssessmentService.getAssessmentStatus(user.uid);
+        setAssessmentStatus({
+          ...status,
+          loading: false,
+        });
+      } catch (error) {
+        console.error("Error loading assessment status:", error);
+        setAssessmentStatus({
+          completed: false,
+          needsRetake: false,
+          loading: false,
+        });
+      }
+    };
+
     if (!loading) {
       if (!user) {
         router.push("/login");
       } else if (!profileCompleted) {
         router.push("/profile-setup");
+      } else {
+        loadAssessmentStatus();
       }
     }
   }, [user, profileCompleted, loading, router]);
@@ -153,24 +181,53 @@ export default function DashboardPage() {
                       Career Assessment
                     </h4>
                     <p className="text-sm text-muted-foreground">
-                      Discover your ideal career path
+                      {assessmentStatus.loading
+                        ? "Checking status..."
+                        : assessmentStatus.completed
+                          ? assessmentStatus.needsRetake
+                            ? "Assessment completed - consider retaking for updated results"
+                            : "Assessment completed successfully"
+                          : "Discover your ideal career path"}
                     </p>
                   </div>
-                  <Button size="sm" variant="outline" asChild>
-                    <Link href="/career-assessment">Start Now</Link>
-                  </Button>
+                  {assessmentStatus.loading ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                  ) : assessmentStatus.completed ? (
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" asChild>
+                        <Link href="/career-assessment">
+                          <RefreshCw className="h-3 w-3 mr-1" />
+                          Retake
+                        </Link>
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button size="sm" variant="outline" asChild>
+                      <Link href="/career-assessment">Start Now</Link>
+                    </Button>
+                  )}
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg opacity-60">
+                <div
+                  className={`flex items-center justify-between p-4 bg-muted/30 rounded-lg ${!assessmentStatus.completed ? "opacity-60" : ""}`}
+                >
                   <div>
                     <h4 className="font-medium text-foreground">
                       Course Recommendations
                     </h4>
                     <p className="text-sm text-muted-foreground">
-                      Unlock after assessment
+                      {assessmentStatus.completed
+                        ? "Personalized course suggestions available"
+                        : "Unlock after assessment"}
                     </p>
                   </div>
-                  <div className="text-muted-foreground">Locked</div>
+                  {assessmentStatus.completed ? (
+                    <Button size="sm" variant="outline" asChild>
+                      <Link href="/courses">View Courses</Link>
+                    </Button>
+                  ) : (
+                    <div className="text-muted-foreground">Locked</div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -192,15 +249,27 @@ export default function DashboardPage() {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">
-                    Assessments
+                    Assessment Status
                   </span>
-                  <span className="font-semibold">0/3</span>
+                  <span
+                    className={`font-semibold ${assessmentStatus.completed ? "text-green-600" : "text-orange-600"}`}
+                  >
+                    {assessmentStatus.loading
+                      ? "Loading..."
+                      : assessmentStatus.completed
+                        ? "Complete"
+                        : "Pending"}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">
                     Recommendations
                   </span>
-                  <span className="font-semibold">Pending</span>
+                  <span
+                    className={`font-semibold ${assessmentStatus.completed ? "text-green-600" : ""}`}
+                  >
+                    {assessmentStatus.completed ? "Available" : "Pending"}
+                  </span>
                 </div>
               </CardContent>
             </Card>
@@ -213,36 +282,55 @@ export default function DashboardPage() {
               <CardContent>
                 <div className="space-y-3">
                   <div className="flex items-start gap-3">
-                    <div className="h-2 w-2 rounded-full bg-primary mt-2"></div>
+                    <div
+                      className={`h-2 w-2 rounded-full mt-2 ${assessmentStatus.completed ? "bg-green-500" : "bg-primary"}`}
+                    ></div>
                     <div>
-                      <p className="text-sm font-medium">
-                        Take Career Assessment
+                      <p
+                        className={`text-sm font-medium ${assessmentStatus.completed ? "text-green-600" : ""}`}
+                      >
+                        {assessmentStatus.completed
+                          ? "✓ Career Assessment Complete"
+                          : "Take Career Assessment"}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Complete our AI-powered assessment to get personalized
-                        recommendations
+                        {assessmentStatus.completed
+                          ? "Assessment completed successfully"
+                          : "Complete our AI-powered assessment to get personalized recommendations"}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="h-2 w-2 rounded-full bg-muted-foreground mt-2"></div>
+                    <div
+                      className={`h-2 w-2 rounded-full mt-2 ${assessmentStatus.completed ? "bg-primary" : "bg-muted-foreground"}`}
+                    ></div>
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">
+                      <p
+                        className={`text-sm font-medium ${assessmentStatus.completed ? "" : "text-muted-foreground"}`}
+                      >
                         Explore Courses
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Browse recommended courses and colleges
+                        {assessmentStatus.completed
+                          ? "Browse your personalized course recommendations"
+                          : "Browse recommended courses and colleges"}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="h-2 w-2 rounded-full bg-muted-foreground mt-2"></div>
+                    <div
+                      className={`h-2 w-2 rounded-full mt-2 ${assessmentStatus.completed ? "bg-primary" : "bg-muted-foreground"}`}
+                    ></div>
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">
-                        Create Action Plan
+                      <p
+                        className={`text-sm font-medium ${assessmentStatus.completed ? "" : "text-muted-foreground"}`}
+                      >
+                        View Career Path
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Build your personalized career roadmap
+                        {assessmentStatus.completed
+                          ? "Follow your personalized career roadmap"
+                          : "Build your personalized career roadmap"}
                       </p>
                     </div>
                   </div>

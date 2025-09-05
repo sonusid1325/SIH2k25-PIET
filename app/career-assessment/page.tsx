@@ -19,6 +19,8 @@ import {
   ArrowRight,
   Loader2,
   BookOpen,
+  RefreshCw,
+  FileText,
 } from "lucide-react";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
@@ -85,6 +87,18 @@ interface UserProfile {
   stream: string;
   interests: string[];
   location: string;
+  assessmentResults?: {
+    topCareerMatches: Array<{
+      career: string;
+      matchPercentage: number;
+      requiredSkills: string[];
+    }>;
+    skillGaps: string[];
+    recommendedLearningPath: string[];
+    personalityType: string;
+    interests: string[];
+    completedAt: string;
+  };
 }
 
 export default function CareerAssessmentPage() {
@@ -92,7 +106,7 @@ export default function CareerAssessmentPage() {
   const router = useRouter();
 
   const [step, setStep] = useState<
-    "loading" | "intro" | "assessment" | "submitting" | "results"
+    "loading" | "intro" | "assessment" | "submitting" | "results" | "completed"
   >("loading");
   const [assessmentData, setAssessmentData] = useState<AssessmentData | null>(
     null,
@@ -102,6 +116,10 @@ export default function CareerAssessmentPage() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [analysisResults, setAnalysisResults] = useState<unknown>(null);
   const [error, setError] = useState("");
+  const [hasCompletedAssessment, setHasCompletedAssessment] = useState(false);
+  const [existingResults, setExistingResults] = useState<
+    UserProfile["assessmentResults"] | null
+  >(null);
 
   useEffect(() => {
     const loadUserProfile = async () => {
@@ -112,7 +130,15 @@ export default function CareerAssessmentPage() {
         if (userDoc.exists()) {
           const profile = userDoc.data() as UserProfile;
           setUserProfile(profile);
-          generateQuestions(profile);
+
+          // Check if user has completed assessment
+          if (profile.assessmentResults) {
+            setHasCompletedAssessment(true);
+            setExistingResults(profile.assessmentResults);
+            setStep("completed");
+          } else {
+            generateQuestions(profile);
+          }
         }
       } catch (error) {
         console.error("Error loading user profile:", error);
@@ -225,11 +251,25 @@ export default function CareerAssessmentPage() {
       });
 
       setAnalysisResults(analysis);
+      setExistingResults(assessmentResults);
+      setHasCompletedAssessment(true);
       setStep("results");
     } catch (error) {
       console.error("Error submitting assessment:", error);
       setError("Failed to analyze responses. Please try again.");
     }
+  };
+
+  const retakeAssessment = () => {
+    setStep("intro");
+    setCurrentQuestionIndex(0);
+    setResponses({});
+    setAnalysisResults(null);
+    setError("");
+  };
+
+  const viewFullReport = () => {
+    router.push("/assessment-report");
   };
 
   const renderQuestion = (question: AssessmentQuestion) => {
@@ -603,6 +643,134 @@ export default function CareerAssessmentPage() {
     );
   }
 
+  if (step === "completed" && hasCompletedAssessment) {
+    return (
+      <div className="min-h-screen bg-background">
+        <main className="container mx-auto px-4 py-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-8">
+              <div className="h-16 w-16 rounded-full bg-green-500 flex items-center justify-center text-white shadow-lg mx-auto mb-6">
+                <CheckCircle className="h-8 w-8" />
+              </div>
+              <h1 className="text-3xl font-bold text-foreground mb-4">
+                Assessment Already Completed
+              </h1>
+              <p className="text-lg text-muted-foreground">
+                You have already completed your career assessment. You can view
+                your detailed report or retake the assessment for updated
+                results.
+              </p>
+            </div>
+
+            <div className="space-y-6">
+              {/* Assessment Status Card */}
+              <Card className="border-border/50 shadow-lg">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5 text-green-500" />
+                    Assessment Status
+                  </CardTitle>
+                  <CardDescription>
+                    Completed on{" "}
+                    {existingResults?.completedAt
+                      ? new Date(
+                          existingResults.completedAt,
+                        ).toLocaleDateString()
+                      : "Recently"}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                      <h4 className="font-semibold text-green-800 mb-2">
+                        Career Matches Found
+                      </h4>
+                      <p className="text-green-700">
+                        {existingResults?.topCareerMatches?.length || 0}{" "}
+                        personalized career recommendations
+                      </p>
+                    </div>
+                    <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <h4 className="font-semibold text-blue-800 mb-2">
+                        Skills Identified
+                      </h4>
+                      <p className="text-blue-700">
+                        {existingResults?.skillGaps?.length || 0} skill
+                        development areas identified
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button
+                  onClick={viewFullReport}
+                  size="lg"
+                  className="bg-orange hover:bg-orange/90 text-white flex items-center gap-2"
+                >
+                  <FileText className="h-5 w-5" />
+                  View Full Report
+                </Button>
+                <Button
+                  onClick={retakeAssessment}
+                  size="lg"
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  <RefreshCw className="h-5 w-5" />
+                  Retake Assessment
+                </Button>
+              </div>
+
+              {/* Quick Preview Card */}
+              {existingResults?.topCareerMatches &&
+                existingResults.topCareerMatches.length > 0 && (
+                  <Card className="border-border/50">
+                    <CardHeader>
+                      <CardTitle>Quick Preview - Top Career Match</CardTitle>
+                      <CardDescription>
+                        Your highest matching career recommendation
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center justify-between p-4 bg-gradient-to-r from-orange/10 to-orange/5 rounded-lg border border-orange/20">
+                        <div>
+                          <h4 className="font-semibold text-foreground text-lg">
+                            {existingResults.topCareerMatches[0].career}
+                          </h4>
+                          <p className="text-muted-foreground">
+                            {
+                              existingResults.topCareerMatches[0]
+                                .matchPercentage
+                            }
+                            % match based on your profile
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-2xl font-bold text-orange">
+                            {
+                              existingResults.topCareerMatches[0]
+                                .matchPercentage
+                            }
+                            %
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            Match Score
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   if (step === "results" && analysisResults) {
     return (
       <div className="min-h-screen bg-background">
@@ -621,23 +789,35 @@ export default function CareerAssessmentPage() {
               </p>
             </div>
 
-            {/* Results will be implemented in the next phase */}
-            <Card className="border-border/50 shadow-lg">
-              <CardHeader>
-                <CardTitle>Analysis Complete</CardTitle>
-                <CardDescription>
-                  Your comprehensive career guidance report is ready
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button
-                  onClick={() => router.push("/results")}
-                  className="bg-orange hover:bg-orange/90 text-white"
-                >
-                  View Detailed Results
-                </Button>
-              </CardContent>
-            </Card>
+            <div className="space-y-6">
+              <Card className="border-border/50 shadow-lg">
+                <CardHeader>
+                  <CardTitle>Analysis Complete</CardTitle>
+                  <CardDescription>
+                    Your comprehensive career guidance report is ready
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <Button
+                      onClick={() => router.push("/assessment-report")}
+                      className="bg-orange hover:bg-orange/90 text-white flex items-center gap-2"
+                    >
+                      <FileText className="h-4 w-4" />
+                      View Full Report
+                    </Button>
+                    <Button
+                      onClick={retakeAssessment}
+                      variant="outline"
+                      className="flex items-center gap-2"
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                      Retake Assessment
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </main>
       </div>
