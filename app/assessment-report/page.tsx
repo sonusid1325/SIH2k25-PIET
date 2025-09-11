@@ -242,7 +242,7 @@ export default function AssessmentReportPage() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   activeTab === tab.id
-                    ? "bg-white shadow-sm text-foreground"
+                    ? "shadow-sm text-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >

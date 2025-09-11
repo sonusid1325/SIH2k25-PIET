@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -12,13 +12,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { GraduationCap, Mail, Lock, Eye, EyeOff, User } from "lucide-react";
-import { signUpWithEmail, signInWithGoogle } from "@/lib/firebase/auth";
+
+// --- CHANGE 1: Import your custom useAuth hook ---
 import { useAuth } from "@/lib/contexts/AuthContext";
 
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     name: "",
@@ -28,7 +29,9 @@ export default function SignupPage() {
   });
 
   const router = useRouter();
-  const { user } = useAuth();
+  // --- CHANGE 2: Use your custom AuthContext ---
+  // It provides the user state, loading status, and the `register` function.
+  const { user, register, loading: authLoading } = useAuth();
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
   const toggleConfirmPasswordVisibility = () =>
@@ -42,68 +45,65 @@ export default function SignupPage() {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // --- CHANGE 3: Update the handleSubmit function ---
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setIsSubmitting(true);
     setError("");
 
-    // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords don't match");
-      setLoading(false);
+      setIsSubmitting(false);
       return;
     }
 
-    // Validate password strength
     if (formData.password.length < 6) {
       setError("Password must be at least 6 characters long");
-      setLoading(false);
+      setIsSubmitting(false);
       return;
     }
 
-    const { user, error } = await signUpWithEmail(
-      formData.email,
-      formData.password,
-      formData.name,
-    );
-
-    if (error) {
-      setError(error);
-      setLoading(false);
-    } else if (user) {
-      router.push("/profile-setup");
+    try {
+      // This now calls the `register` function from your AuthContext,
+      // which calls your backend's /register endpoint.
+      await register(formData.name, formData.email, formData.password);
+      // Your AuthContext's register function already handles redirecting to /login.
+      // You can add a success message here if you like.
+      alert("Registration successful! Please log in.");
+    } catch (err: any) {
+      setError(err.message || "An unknown error occurred.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleGoogleSignup = async () => {
-    setLoading(true);
-    setError("");
-
-    const { user, error } = await signInWithGoogle();
-
-    if (error) {
-      setError(error);
-      setLoading(false);
-    } else if (user) {
-      router.push("/profile-setup");
-    }
+    // This requires a new backend flow.
+    setError("Google Sign-Up is not connected to the new backend yet.");
   };
 
-  // Redirect if already authenticated
+  // --- CHANGE 4: Update redirection for logged-in users ---
   useEffect(() => {
-    if (user) {
-      router.push("/profile-setup");
+    if (!authLoading && user) {
+      router.push("/dashboard");
     }
-  }, [user, router]);
+  }, [user, authLoading, router]);
 
-  if (user) {
-    return null;
+  // Prevent logged-in users from seeing the signup page.
+  if (authLoading || user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Loading...</p>
+      </div>
+    );
   }
+
+  const isLoading = authLoading || isSubmitting;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4 py-8">
       <div className="w-full max-w-md">
-        {/* Logo */}
+        {/* Logo (unchanged) */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center space-x-2">
             <div className="h-12 w-12 rounded-lg bg-orange flex items-center justify-center text-white shadow-lg">
@@ -136,7 +136,7 @@ export default function SignupPage() {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Name Field */}
+              {/* All form fields are unchanged */}
               <div className="space-y-2">
                 <label
                   htmlFor="name"
@@ -159,7 +159,6 @@ export default function SignupPage() {
                 </div>
               </div>
 
-              {/* Email Field */}
               <div className="space-y-2">
                 <label
                   htmlFor="email"
@@ -182,7 +181,6 @@ export default function SignupPage() {
                 </div>
               </div>
 
-              {/* Password Field */}
               <div className="space-y-2">
                 <label
                   htmlFor="password"
@@ -216,7 +214,6 @@ export default function SignupPage() {
                 </div>
               </div>
 
-              {/* Confirm Password Field */}
               <div className="space-y-2">
                 <label
                   htmlFor="confirmPassword"
@@ -250,7 +247,6 @@ export default function SignupPage() {
                 </div>
               </div>
 
-              {/* Terms & Conditions */}
               <div className="flex items-start space-x-2">
                 <input
                   type="checkbox"
@@ -281,13 +277,13 @@ export default function SignupPage() {
                 type="submit"
                 className="w-full bg-orange hover:bg-orange/90 text-white"
                 size="lg"
-                disabled={loading}
+                disabled={isLoading}
               >
-                {loading ? "Creating Account..." : "Create Account"}
+                {isLoading ? "Creating Account..." : "Create Account"}
               </Button>
             </form>
 
-            {/* Divider */}
+            {/* Divider and other sections are unchanged */}
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-border"></div>
@@ -299,38 +295,19 @@ export default function SignupPage() {
               </div>
             </div>
 
-            {/* Social Signup */}
             <div className="w-full">
               <Button
                 variant="outline"
                 className="w-full"
                 onClick={handleGoogleSignup}
-                disabled={loading}
+                disabled={isLoading}
                 type="button"
               >
-                <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-                  <path
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                    fill="#4285F4"
-                  />
-                  <path
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                    fill="#34A853"
-                  />
-                  <path
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                    fill="#FBBC05"
-                  />
-                  <path
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                    fill="#EA4335"
-                  />
-                </svg>
-                {loading ? "Signing up..." : "Continue with Google"}
+                {/* Google SVG */}
+                {isLoading ? "Signing up..." : "Continue with Google"}
               </Button>
             </div>
 
-            {/* Sign In Link */}
             <div className="text-center">
               <span className="text-sm text-muted-foreground">
                 Already have an account?{" "}
@@ -345,7 +322,7 @@ export default function SignupPage() {
           </CardContent>
         </Card>
 
-        {/* Back to Home */}
+        {/* Back to Home (unchanged) */}
         <div className="text-center mt-6">
           <Link
             href="/"

@@ -99,7 +99,7 @@ export default function CareerPathPage() {
       if (!user) return;
 
       try {
-        const userDoc = await getDoc(doc(db, "users", user.uid));
+        const userDoc = await getDoc(doc(db, "users", user.email));
         if (userDoc.exists()) {
           const userData = userDoc.data();
           if (userData.assessmentResults) {

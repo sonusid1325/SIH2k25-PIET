@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -12,79 +12,77 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { GraduationCap, Mail, Lock, Eye, EyeOff } from "lucide-react";
-import { signInWithEmail, signInWithGoogle } from "@/lib/firebase/auth";
+
+// --- CHANGE 1: Import your custom useAuth hook ---
+// This replaces the import from firebase/auth
 import { useAuth } from "@/lib/contexts/AuthContext";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const router = useRouter();
-  const { user, profileCompleted } = useAuth();
+  // --- CHANGE 2: Use your custom AuthContext ---
+  // It provides the user state, loading status, and the `login` function for your backend.
+  const { user, login, loading: authLoading, profileCompleted } = useAuth();
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // --- CHANGE 3: Update the handleSubmit function ---
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setIsSubmitting(true);
     setError("");
 
-    const { user, error } = await signInWithEmail(email, password);
-
-    if (error) {
-      setError(error);
-      setLoading(false);
-    } else if (user) {
-      // Redirect based on profile completion
-      if (profileCompleted) {
-        router.push("/dashboard");
-      } else {
-        router.push("/profile-setup");
-      }
+    try {
+      // This now calls the `login` function from your AuthContext,
+      // which in turn calls your backend API.
+      await login(email, password);
+      // Redirection is now handled by the useEffect hook below.
+    } catch (err: any) {
+      setError(err.message || "An unknown error occurred.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleGoogleSignIn = async () => {
-    setLoading(true);
-    setError("");
-
-    const { user, error } = await signInWithGoogle();
-
-    if (error) {
-      setError(error);
-      setLoading(false);
-    } else if (user) {
-      // Redirect based on profile completion
-      if (profileCompleted) {
-        router.push("/dashboard");
-      } else {
-        router.push("/profile-setup");
-      }
-    }
+    // This requires a new backend flow. For now, we'll just show an error.
+    setError("Google Sign-In needs to be connected to the new backend.");
   };
 
-  // Redirect if already authenticated
+  // --- CHANGE 4: Update the redirection logic ---
+  // This effect listens for changes in the user state from your AuthContext.
   useEffect(() => {
-    if (user) {
+    if (!authLoading && user) {
       if (profileCompleted) {
         router.push("/dashboard");
       } else {
+        // You can implement this logic later if needed
         router.push("/profile-setup");
       }
     }
-  }, [user, profileCompleted, router]);
+  }, [user, authLoading, profileCompleted, router]);
 
-  if (user) {
-    return null;
+  // Show a loading screen while the AuthContext is verifying the user's session.
+  // This also prevents the login form from flashing on the screen for a logged-in user.
+  if (authLoading || user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Loading...</p>
+      </div>
+    );
   }
+
+  const isLoading = authLoading || isSubmitting;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
-        {/* Logo */}
+        {/* Logo and other JSX is unchanged */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center space-x-2">
             <div className="h-12 w-12 rounded-lg bg-orange flex items-center justify-center text-white shadow-lg">
@@ -99,7 +97,6 @@ export default function LoginPage() {
           </Link>
         </div>
 
-        {/* Login Form */}
         <Card className="border-border/50 shadow-lg">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center">Welcome back</CardTitle>
@@ -115,7 +112,7 @@ export default function LoginPage() {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Email Field */}
+              {/* Email and Password fields are unchanged */}
               <div className="space-y-2">
                 <label
                   htmlFor="email"
@@ -137,7 +134,6 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              {/* Password Field */}
               <div className="space-y-2">
                 <label
                   htmlFor="password"
@@ -169,24 +165,24 @@ export default function LoginPage() {
                   </button>
                 </div>
               </div>
-
-              {/* Remember Me & Forgot Password */}
+              
+              {/* Remember Me & Forgot Password (unchanged) */}
               <div className="flex items-center justify-between">
-                <label className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="rounded border-gray-300 text-primary focus:ring-primary"
-                  />
-                  <span className="text-sm text-muted-foreground">
-                    Remember me
-                  </span>
-                </label>
-                <Link
-                  href="/forgot-password"
-                  className="text-sm text-primary hover:underline"
-                >
-                  Forgot password?
-                </Link>
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="rounded border-gray-300 text-primary focus:ring-primary"
+                    />
+                    <span className="text-sm text-muted-foreground">
+                      Remember me
+                    </span>
+                  </label>
+                  <Link
+                    href="/forgot-password"
+                    className="text-sm text-primary hover:underline"
+                  >
+                    Forgot password?
+                  </Link>
               </div>
 
               {/* Login Button */}
@@ -194,13 +190,13 @@ export default function LoginPage() {
                 type="submit"
                 className="w-full bg-orange hover:bg-orange/90 text-white"
                 size="lg"
-                disabled={loading}
+                disabled={isLoading}
               >
-                {loading ? "Signing In..." : "Sign In"}
+                {isLoading ? "Signing In..." : "Sign In"}
               </Button>
             </form>
 
-            {/* Divider */}
+            {/* Divider and Social Login sections are unchanged */}
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-border"></div>
@@ -212,13 +208,12 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Social Login */}
             <div className="w-full">
               <Button
                 variant="outline"
                 className="w-full"
                 onClick={handleGoogleSignIn}
-                disabled={loading}
+                disabled={isLoading}
                 type="button"
               >
                 <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
@@ -239,11 +234,11 @@ export default function LoginPage() {
                     fill="#EA4335"
                   />
                 </svg>
-                {loading ? "Signing In..." : "Continue with Google"}
+                {isLoading ? "Signing In..." : "Continue with Google"}
               </Button>
             </div>
-
-            {/* Sign Up Link */}
+            
+            {/* Sign Up Link (unchanged) */}
             <div className="text-center">
               <span className="text-sm text-muted-foreground">
                 Don&apos;t have an account?{" "}
@@ -258,7 +253,7 @@ export default function LoginPage() {
           </CardContent>
         </Card>
 
-        {/* Back to Home */}
+        {/* Back to Home (unchanged) */}
         <div className="text-center mt-6">
           <Link
             href="/"
